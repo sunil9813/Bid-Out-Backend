@@ -69,12 +69,24 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 const getAllProducts = asyncHandler(async (req, res) => {
-  try {
-    const products = await Product.find({}).populate("user").sort("-createAt");
-    res.json(products);
-  } catch (error) {
-    res.json(error);
-  }
+  const products = await Product.find({}).sort("-createdAt").populate("user");
+
+  const productsWithDetails = await Promise.all(
+    products.map(async (product) => {
+      const latestBid = await BiddingProduct.findOne({ product: product._id }).sort("-createdAt");
+      const biddingPrice = latestBid ? latestBid.price : product.price;
+
+      const totalBids = await BiddingProduct.countDocuments({ product: product._id });
+
+      return {
+        ...product._doc,
+        biddingPrice,
+        totalBids, // Adding the total number of bids
+      };
+    })
+  );
+
+  res.status(200).json(productsWithDetails);
 });
 
 const getAllProductsofUser = asyncHandler(async (req, res) => {

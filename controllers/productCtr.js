@@ -90,11 +90,6 @@ const getAllProducts = asyncHandler(async (req, res) => {
 });
 
 const getAllProductsofUser = asyncHandler(async (req, res) => {
-  /*  const userId = req.user._id;
-
-  const products = await Product.find({ user: userId }).sort("-createdAt").populate("user");
-  res.status(200).json(products); */
-
   const userId = req.user._id;
 
   const products = await Product.find({ user: userId }).sort("-createdAt").populate("user");
@@ -114,23 +109,9 @@ const getAllProductsofUser = asyncHandler(async (req, res) => {
 });
 
 const getWonProducts = asyncHandler(async (req, res) => {
-  /*  const userId = req.user.id; // Get the logged-in user's ID
-
-  // Find products where the `soldTo` field matches the user ID
-  const wonProducts = await Product.find({ soldTo: userId });
-
-  if (!wonProducts.length) {
-    return res.status(404).json({ message: "No products found for this user" });
-  }
-
-  res.status(200).json(wonProducts); */
-
   const userId = req.user._id;
 
   const wonProducts = await Product.find({ soldTo: userId }).sort("-createdAt").populate("user");
-  if (!wonProducts?.length) {
-    return res.status(404).json({ message: "No products found for this user" });
-  }
 
   const productsWithPrices = await Promise.all(
     wonProducts.map(async (product) => {
@@ -180,7 +161,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
     }
   }
 
-  await Product.findOneAndDelete();
+  await Product.findByIdAndDelete(id);
   res.status(200).json({ message: "Product deleted." });
 });
 const updateProduct = asyncHandler(async (req, res) => {
